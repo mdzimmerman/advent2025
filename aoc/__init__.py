@@ -119,6 +119,10 @@ class Point:
                 curr = curr.move(dir)
                 yield curr
 
+    def neighbors(self):
+        for dir, delta in type(self).DELTAS.items():
+            yield self + delta
+
 class CharArray:
     def __init__(self, data, loglevel: str = "WARN"):
         self.logger = Logger(loglevel)
@@ -170,6 +174,10 @@ class CharArray:
             return self.data[p.y][p.x]
         else:
             return default
+
+    def set(self, p: Point, value: str = ' '):
+        if self.in_bounds(p):
+            self.data[p.y][p.x] = value
 
     def enumerate(self):
         for j in range(self.height):
