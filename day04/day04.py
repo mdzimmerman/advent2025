@@ -1,3 +1,4 @@
+import collections.abc
 import sys
 from typing import Set
 
@@ -5,31 +6,43 @@ sys.path.append("..")
 import aoc
 from aoc import Point
 
-class GridSet:
-    points: Set[Point]
+class GridSet(collections.abc.MutableSet):
+    _points: Set[Point]
     width: int
     height: int
 
     def __init__(self, points, width, height):
-        self.points = points
+        self._points = points
         self.width = width
         self.height = height
+
+    def __contains__(self, point):
+        return point in self._points
+
+    def __len__(self):
+        return len(self._points)
+
+    def __iter__(self):
+        return iter(self._points)
+
+    def add(self, p: Point):
+        self._points.add(p)
+
+    def discard(self, p: Point):
+        self._points.discard(p)
+
+    def __repr__(self):
+        return f"GridSet({list(self._points)}, w={self.width}, h={self.height})"
 
     def print_grid(self):
         for j in range(self.height):
             for i in range(self.width):
                 p = Point(i, j)
-                if p in self.points:
+                if p in self._points:
                     print("@", end="")
                 else:
                     print(".", end="")
             print()
-
-    def add(self, p: Point):
-        self.points.add(p)
-
-    def remove(self, p: Point):
-        self.points.remove(p)
 
     @classmethod
     def from_file(cls, filename):
@@ -48,8 +61,8 @@ class GridSet:
 
 def find_removable(grid: GridSet):
     out = list()
-    for p in grid.points:
-        n = len([pn for pn in p.neighbors() if pn in grid.points])
+    for p in grid:
+        n = len([pn for pn in p.neighbors() if pn in grid])
         if n < 4:
             out.append(p)
     return out
