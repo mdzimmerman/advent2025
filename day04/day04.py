@@ -86,17 +86,8 @@ def part2(grid: GridSet, debug=False):
 
 if __name__ == "__main__":
     test = GridSet.from_file("test.txt")
-    #print(test.width)
-    #print(test.height)
-    #test.print_grid()
-
     print(part1(test))
-
     print(part2(test, debug=True))
 
     inp = GridSet.from_file("input.txt")
-
     print(part2(inp))
-
-    #inp = aoc.CharArray.from_file("input.txt")
-    #print(part1(inp))
