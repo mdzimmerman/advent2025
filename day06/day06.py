@@ -33,19 +33,41 @@ class SquidMath:
 
         return problems
 
-    def part1(self, debug=False):
+    def _get_horiz_numbers(self, xs):
+        return [int(n) for n in xs]
+
+    def _get_vert_numbers(self, xs):
+        width = len(xs[0])
+        ns = [""] * width
+        for r in xs:
+            for i in range(len(xs[0])):
+                ns[i] += r[i]
+        return [int(n) for n in ns]
+
+    def run(self, part=1, debug=False):
         sum = 0
         for p in self.problems:
             op = p[-1].strip()
-            ns = [int(n) for n in p[:-1]]
+            ns = None
+            if part == 1:
+                ns = self._get_horiz_numbers(p[:-1])
+            elif part == 2:
+                ns = self._get_vert_numbers(p[:-1])
+
             if op == "+":
                 out = reduce(operator.add, ns)
             elif op == "*":
                 out = reduce(operator.mul, ns)
+
             if debug: print(op, ns, out)
             sum += out
         return sum
 
+    def part1(self, debug=False):
+        return self.run(part=1, debug=debug)
+
+    def part2(self, debug=False):
+        return self.run(part=2, debug=debug)
 
 
 def main():
@@ -53,9 +75,11 @@ def main():
     print(test.lines)
     print(test.problems)
     print(test.part1(debug=True))
+    print(test.part2(debug=True))
 
     inp = SquidMath("input.txt")
     print(inp.part1())
+    print(inp.part2())
 
 if __name__ == '__main__':
     main()
