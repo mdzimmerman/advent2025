@@ -1,18 +1,32 @@
 from collections import deque
 import sys
+from dataclasses import dataclass
+
 import numpy as np
 
 sys.path.append("..")
-from aoc import Point
 
-class CharArray:
-    def __init__(self, filename):
+@dataclass(frozen=True)
+class Node:
+    x: int
+    y: int
+    type: str
+
+    def __repr__(self):
+        return f"Node({self.x} {self.y} {self.type})"
+
+class Splitters:
+    def __init__(self, filename, debug=False):
         self.filename = filename
+        self.debug = debug
 
         with open(self.filename, 'r') as f:
             # Convert each line into a list of its characters
             data = [list(line.strip()) for line in f]
         self.grid = np.array(data, dtype='U1')
+        self.height = self.grid.shape[0]
+        self.width = self.grid.shape[1]
+        self.graph = self._build_graph()
 
     def print_grid(self):
         for row in self.grid:
@@ -20,63 +34,73 @@ class CharArray:
                 print(c, end='')
             print()
 
-    def run_beam(self):
-        self.active = 0
-        self.inactive = 0
-        for j in range(1, self.grid.shape[0]):
-            for i in  range(self.grid.shape[1]):
-                c = self.grid[j, i]
-                above = self.grid[j-1, i]
-                if c == '.':
-                    if above == 'S' or above == '|':
-                        self.grid[j, i] = '|'
-                elif c == '^':
-                    if above == '|':
-                        self.active += 1
-                        self.grid[j, i-1] = '|'
-                        self.grid[j, i+1] = '|'
-                    else:
-                        self.inactive += 1
+    def find_where(self, char):
+        y, x = np.where(self.grid == char)
+        for j, i in zip(y, x):
+            yield Node(i, j, char)
 
-    def find_next(self, start: Point):
-        p = Point(start.x, start.y)
+    def find_next_node(self, sx, sy):
+        x, y = sx, sy
         while True:
-            if p.y == self.grid.shape[0]-1:
-                return (p, 'E')
-            elif self.grid[p.y, p.x] == '^':
-                return (p, '^')
-            p = Point(p.x, p.y+1)
+            if y == self.height - 1:
+                return Node(x, y, 'E')
+            elif self.grid[y, x] == '^':
+                return Node(x, y, '^')
+            y += 1
 
-    def part2(self, debug=False):
-        count = 0
-        y, x = np.where(self.grid == '^')
-        start = Point(x[0], y[0])
-
+    def _build_graph(self):
+        visited = set()
         queue = deque()
-        queue.append((start, '^'))
+        graph = dict()
+
+        start = next(self.find_where("S"))
+        queue.append(start)
 
         while queue:
-            p, typ = queue.popleft()
-            if debug: print(p, typ)
-            if typ == 'E':
-                count += 1
-            elif typ == '^':
-                queue.append(self.find_next(Point(p.x-1, p.y)))
-                queue.append(self.find_next(Point(p.x+1, p.y)))
+            node = queue.popleft()
+            if node in visited:
+                continue
 
-        return count
+            visited.add(node)
+            if self.debug: print(node)
+
+            if node.type == 'E':
+                graph[node] = None
+            elif node.type == 'S':
+                nnode = self.find_next_node(node.x, node.y)
+                graph[node] = [nnode]
+                queue.append(nnode)
+            elif node.type == '^':
+                nnode1 = self.find_next_node(node.x-1, node.y)
+                nnode2 = self.find_next_node(node.x+1, node.y)
+                graph[node] = [nnode1, nnode2]
+                queue.append(nnode1)
+                queue.append(nnode2)
+        return graph
+
+    def part1(self):
+        return len(list(filter(lambda n: n.type == '^', self.graph.keys())))
+
+    def part2(self, debug=False):
+        pass
 
 if __name__ == '__main__':
-    test = CharArray("test.txt")
-    #print(test.grid)
+    test = Splitters("test.txt")
     test.print_grid()
-    print()
+
+    print(list(test.find_where("S")))
+    print(list(test.find_where("^")))
+    for k, v in test.graph.items():
+        print(k, v)
+    print(test.part1())
+
     #test.run_beam()
     #test.print_grid()
     #print(test.active)
-    print(test.part2(debug=True))
+    #print(test.part2(debug=True))
 
-    inp = CharArray("input.txt")
+    inp = Splitters("input.txt")
+    print(inp.part1())
     #inp.run_beam()
     #print(inp.active)
-    print(inp.part2())
+    #print(inp.part2())
