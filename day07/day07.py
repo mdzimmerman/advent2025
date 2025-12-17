@@ -99,23 +99,25 @@ class Splitters:
         return len(list(filter(lambda n: n.type == '^', self.graph.keys())))
 
     def part2(self, debug=False):
-        start = next(self.find_where("S"))
+        start = next(filter(lambda n: n.type == 'S', self.graph.keys()))
         count = 0
         for end in filter(lambda n: n.type == 'E', self.graph.keys()):
             count += self.count_paths(start, end, memo={})
         return count
 
 if __name__ == '__main__':
+    print("-- test --")
     test = Splitters("test.txt")
     test.print_grid()
-
     print(list(test.find_where("S")))
-    print(list(test.find_where("^")))
+    print(len(list(test.find_where("^"))))
     for k, v in test.graph.items():
         print(k, v)
-    print(test.part1())
-    print(test.part2())
+    print(f"part1 = {test.part1()}")
+    print(f"part2 = {test.part2()}")
 
+    print()
+    print("-- inp --")
     inp = Splitters("input.txt")
-    print(inp.part1())
-    print(inp.part2())
+    print(f"part1 = {inp.part1()}")
+    print(f"part2 = {inp.part2()}")
