@@ -78,11 +78,32 @@ class Splitters:
                 queue.append(nnode2)
         return graph
 
+    def count_paths(self, source, dest, memo={}):
+        """ This is a simplified memoized counting implementation that assumes that
+            self.graph is a DAG (which it is)"""
+
+        if source == dest:
+            return 1
+        if source in memo:
+            return memo[source]
+
+        count = 0
+        if self.graph[source] is not None:
+            for child in self.graph[source]:
+                count += self.count_paths(child, dest, memo)
+
+        memo[source] = count
+        return count
+
     def part1(self):
         return len(list(filter(lambda n: n.type == '^', self.graph.keys())))
 
     def part2(self, debug=False):
-        pass
+        start = next(self.find_where("S"))
+        count = 0
+        for end in filter(lambda n: n.type == 'E', self.graph.keys()):
+            count += self.count_paths(start, end, memo={})
+        return count
 
 if __name__ == '__main__':
     test = Splitters("test.txt")
@@ -93,14 +114,8 @@ if __name__ == '__main__':
     for k, v in test.graph.items():
         print(k, v)
     print(test.part1())
-
-    #test.run_beam()
-    #test.print_grid()
-    #print(test.active)
-    #print(test.part2(debug=True))
+    print(test.part2())
 
     inp = Splitters("input.txt")
     print(inp.part1())
-    #inp.run_beam()
-    #print(inp.active)
-    #print(inp.part2())
+    print(inp.part2())
