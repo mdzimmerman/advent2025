@@ -41,11 +41,58 @@ class Junctions:
                 data['dist'].append(self.boxes[i].dist((self.boxes[j])))
         return pd.DataFrame(data)
 
+    def find_group(self, i, subgroups):
+        for gi, group in subgroups.items():
+            if i in group:
+                return gi
+
+    def part1(self, n=10):
+        subgroups = dict()
+        for i in range(len(self.boxes)):
+            subgroups[i] = set()
+            subgroups[i].add(i)
+
+        for row in self.dist.sort_values(by='dist')[:n].itertuples():
+            i, j = row.i, row.j
+            gi = self.find_group(i, subgroups)
+            gj = self.find_group(j, subgroups)
+            if gi != gj:
+                subgroups[gi] = subgroups[gi] | subgroups[gj]
+                del subgroups[gj]
+
+        lengths = []
+        for groups in subgroups.values():
+            lengths.append(len(groups))
+
+        return math.prod(sorted(lengths, reverse=True)[0:3])
+
+    def part2(self):
+        subgroups = dict()
+        for i in range(len(self.boxes)):
+            subgroups[i] = set()
+            subgroups[i].add(i)
+
+        for row in self.dist.sort_values(by='dist').itertuples():
+            i, j = row.i, row.j
+            gi = self.find_group(i, subgroups)
+            gj = self.find_group(j, subgroups)
+            if gi != gj:
+                subgroups[gi] = subgroups[gi] | subgroups[gj]
+                del subgroups[gj]
+                if len(subgroups) == 1:
+                    boxi = self.boxes[i]
+                    boxj = self.boxes[j]
+                    print(boxi, boxj)
+                    return boxi.x * boxj.x
+
+
 if __name__ == "__main__":
     test = Junctions("test.txt")
     for b in test.boxes:
         print(b)
-    for row in test.dist.sort_values(by='dist')[:20].itertuples():
-        i, j = row.i, row.j
-        print(i, test.boxes[i], j, test.boxes[j], row.dist)
-    #print(test.dist.sort_values(by='dist')[:20])
+    print(test.part1(n=10))
+    print(test.part2())
+
+    inp = Junctions("input.txt")
+    print(inp.part1(n=1000))
+    print(inp.part2())
