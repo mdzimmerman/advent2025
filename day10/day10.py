@@ -103,9 +103,9 @@ class Machine:
         #print(A)
         #print(y)
         Ay = np.concatenate((A, y), axis=1)
-        print(Ay)
+        #print(Ay)
         Ay_rref, depvar = self.rref(Ay)
-        print(Ay_rref)
+        #print(Ay_rref)
         inpvar = list()
         for i in range(nb):
             if i not in depvar:
@@ -115,23 +115,27 @@ class Machine:
         #x = np.array((1, 3, 0, 3, 1, 2), dtype=np.int32)
         #print(A @ x.T)
 
-        nmax = sum(Ay_rref[:, -1])
+        #print (depvar, inpvar)
+        nmax = sum(np.abs(Ay_rref[:, -1]))
+        print(nmax)
         bmin = nmax
         if not inpvar:
-            print(bmin)
-            return bmin
+            return sum(Ay_rref[:, -1])
 
         for xis in itersum(len(inpvar), nmax):
+            #print(xis)
             x = np.zeros((nb), dtype=np.int32)
             z = Ay_rref[:, -1]
             for i, xi in zip(inpvar, xis):
+                #print(i, xi)
                 z = z - xi * Ay_rref[:, i]
                 x[i] = xi
             for i, dv in enumerate(depvar):
                 x[dv] = z[i]
+            #print(x)
             if np.all(x >= 0) and sum(x) <= bmin:
                 bmin = sum(x)
-                print(bmin, x, "=>", A @ x.T)
+                #print(bmin, x, "=>", A @ x.T)
         return bmin
 
 
@@ -168,5 +172,5 @@ if __name__ == '__main__':
     #for x in itersum(1, 10):
     #    print(x)
 
-    #inp = Machine.from_file("input.txt")
-    #print(part1(inp))
+    inp = Machine.from_file("input.txt")
+    print(part2(inp, debug=True))
